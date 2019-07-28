@@ -2,13 +2,13 @@ import React from 'react';
 import SpriteSheet from 'rn-sprite-sheet';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import * as yup from 'yup';
-import { StyleSheet, SafeAreaView, View, TextInput, Text, Button, Keyboard } from 'react-native'
+import { StyleSheet, SafeAreaView, View, TextInput, Text, Button, Keyboard, InteractionManager } from 'react-native';
 import { withFormik, ErrorMessage } from 'formik';
 import StateMachine from 'javascript-state-machine';
 
 const sprite = require('./assets/cow.png');
 
-class Index extends React.Component {
+class App extends React.Component {
     constructor(props) {
         super(props);
         this.fsm = new StateMachine({
@@ -94,6 +94,10 @@ class Index extends React.Component {
             if (this.props.isValid) {
                 if (this.props.status === 'error') {
                     this.fsm.failedLogin();
+                    this.props.setErrors({
+                        [fieldName.login]: 'Incorrect login or password',
+                        [fieldName.password]: 'Incorrect login or password',
+                    });
                 } else {
                     this.fsm.successLogin();
                 }
@@ -125,10 +129,10 @@ class Index extends React.Component {
                     />
                 </View>
                 <View style={styles.section}>
-                    <View style={{ flex: 1, paddingLeft: 10, paddingRight: 10 }}>
+                    <View style={styles.wrap}>
                         <TextInput
                             autoFocus
-                            style={{ borderWidth: 1 }}
+                            style={styles.loginInput}
                             onFocus={() => this.fsm.loginInputFocus()}
                             onChangeText={this.props.handleChange(fieldName.login)}
                             onBlur={this.props.handleBlur(fieldName.login)}
@@ -136,27 +140,29 @@ class Index extends React.Component {
                         />
                         <ErrorMessage
                             name={fieldName.login}
-                            render={msg => (<Text style={{ color: 'red' }}>{msg}</Text>)}
+                            render={(msg) => (<Text style={styles.errorText}>{msg}</Text>)}
                         />
                         <View>
                             <TextInput
                                 ref={this.refPasswordField}
                                 secureTextEntry={!this.state.showPassword}
-                                style={{ borderWidth: 1, marginTop: 20 }}
+                                style={styles.passwordInput}
                                 onChangeText={this.props.handleChange(fieldName.password)}
                                 onBlur={this.handleBlurPassword}
                                 onFocus={() => this.fsm.passwordInput()}
                                 value={this.props.values[fieldName.password]}
                             />
-                            <Icon name={this.state.showPassword ? 'eye-slash' : 'eye'} size={30}
-                                  style={{ position: 'absolute', top: 30, right: 10 }}
-                                  onPress={() => this.fsm.showPassword()}/>
+                            <Icon
+                                name={this.state.showPassword ? 'eye-slash' : 'eye'} size={30}
+                                style={styles.icon}
+                                onPress={() => this.fsm.showPassword()}
+                            />
                             <ErrorMessage
                                 name={fieldName.password}
-                                render={msg => (<Text style={{ color: 'red' }}>{msg}</Text>)}
+                                render={(msg) => (<Text style={styles.errorText}>{msg}</Text>)}
                             />
                         </View>
-                        <View style={{ marginTop: 20 }}>
+                        <View style={styles.wrapSubmitButton}>
                             <Button title="Log in" onPress={this.props.handleSubmit}/>
                         </View>
                     </View>
@@ -167,13 +173,15 @@ class Index extends React.Component {
 }
 
 const styles = StyleSheet.create({
+    wrap: { flex: 1, paddingLeft: 50, paddingRight: 50 },
     section: { flex: 1 },
-    imageWrap: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
+    imageWrap: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     imageStyle: { marginTop: -1 },
+    errorText: { color: 'red' },
+    loginInput: { borderWidth: 1, fontSize: 20, paddingLeft: 10, paddingRight: 10 },
+    passwordInput: { borderWidth: 1, marginTop: 20, fontSize: 20, paddingLeft: 10, paddingRight: 10 },
+    icon: { position: 'absolute', top: 30, right: 10 },
+    wrapSubmitButton: { marginTop: 20 },
 });
 
 const fieldName = {
@@ -225,6 +233,6 @@ export default withFormik({
                 formikBag.setStatus('error');
             }
             formikBag.setSubmitting(false);
-        }, 3000)
-    }
-})(Index);
+        }, 1000);
+    },
+})(App);
