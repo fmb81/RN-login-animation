@@ -2,7 +2,7 @@
 
 An animated cow that responds to login and password fields interactions
 
-![alt RNAnimation](./video_app.gif | width=350)
+<img src="./video_app.gif"  width="350">
 
 ## Examples
 
